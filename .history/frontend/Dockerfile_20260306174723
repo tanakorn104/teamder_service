@@ -1,0 +1,8 @@
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+# ใช้ dev แทนเพื่อไม่ต้องรอ Build นานและข้ามขั้นตอนเช็ค Error ละเอียด
+CMD ["npm", "run", "dev"]

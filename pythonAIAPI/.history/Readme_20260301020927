@@ -1,0 +1,48 @@
+
+# Strategic Team AI Predictor & Learning System
+
+ระบบ AI สำหรับวิเคราะห์และทำนายประสิทธิภาพการทำงานของทีม โดยใช้การวิเคราะห์ระดับบุคคล (Individual Traits) ผสมผสานกับปัจจัยเชิงยุทธศาสตร์ (Strategic Factors) เพื่อพยากรณ์ผลลัพธ์ของกลุ่มในบริบทที่แตกต่างกัน ทั้งในภาคการศึกษาและระดับมืออาชีพ [cite: User Summary]
+
+---
+
+## 📌 Overview
+โปรเจกต์นี้พัฒนาขึ้นเพื่อตอบโจทย์การจัดทีมที่มีประสิทธิภาพ (Strategic Team Formation) โดย AI จะคำนวณจากบุคลิกภาพ (Big Five Inventory), ทักษะการตัดสินใจ (Situational Judgment Test), และระดับความเชี่ยวชาญ (Skill) เพื่อพยากรณ์ผลลัพธ์ 4 ด้านหลัก [cite: User Summary]:
+1. Y1_Safety: ความปลอดภัยทางจิตใจภายในทีม [cite: User Summary]
+2. Y2_Compatibility: ความเข้ากันได้ของสมาชิก [cite: User Summary]
+3. Y3_Success: โอกาสความสำเร็จของงาน (เน้นบทบาทของผู้นำและ "ตัวแบก") [cite: User Summary]
+4. Y4_Innovation: ศักยภาพในการสร้างสรรค์นวัตกรรม [cite: User Summary]
+
+## 🧠 Machine Learning Model
+* Model Type: MultiOutputRegressor โดยใช้พื้นฐานจาก LightGBM (LGBMRegressor) [cite: User Summary].
+* Learning Strategy: 
+    - Team-Level Aggregation: เปลี่ยนการมองข้อมูลรายคนเป็น "ภาพรวมของทีม" เพื่อเพิ่มความแม่นยำ (R-squared Score) [cite: User Summary].
+    - Strategic Features: เพิ่มตัวแปร Max_Skill เพื่อตรวจจับ "ตัวแบก" และ Env_Type เพื่อสลับโหมดการให้น้ำหนักตามบริบท [cite: User Summary].
+* Performance: บรรลุค่าความแม่นยำ (R-squared) ในระดับ High (0.70 - 0.90+) หลังจากทำ Data Aggregation [cite: User Summary].
+
+## 📊 Dataset Structure
+ข้อมูลประกอบด้วยสมาชิก 10,000 แถว ที่ถูกยุบรวม (Groupby) เป็นข้อมูลระดับทีมสำหรับการเทรน [cite: User Summary]:
+
+- Category: Context | Features: Env_Type | Description: 0 = นักศึกษา, 1 = คนทำงาน [cite: User Summary]
+- Category: Demographic | Features: TeamSize | Description: จำนวนสมาชิกในทีม [cite: User Summary]
+- Category: Personality | Features: BFI_O, C, E, A, N | Description: ค่าเฉลี่ยบุคลิกภาพ Big Five [cite: User Summary]
+- Category: Leadership | Features: SJT_Lead, Plan, Support | Description: ค่าเฉลี่ยทักษะการตัดสินใจตามสถานการณ์ [cite: User Summary]
+- Category: Strategy | Features: Skill_Mean, Max_Skill | Description: ค่าเฉลี่ยทักษะและทักษะสูงสุดในทีม [cite: User Summary]
+
+## 🛠 Tech Stack
+* Language: Python (รองรับงานด้าน Computer Science และ Programming) [cite: User Summary].
+* Framework: FastAPI (สำหรับ API Server) [cite: User Summary].
+* ML Libraries: Scikit-learn, LightGBM, Pandas, NumPy, Joblib [cite: User Summary].
+* Application Focus: การจัดทีมวิจัยและการทำงาน (สอดคล้องกับงานวิจัย Memory-Centric Architectures และโครงงานจัดทีม AI) [cite: User Summary].
+
+## 🚀 API Endpoints
+
+1. Predict Team Performance (POST /predict)
+   - Input: ข้อมูลสมาชิก (Traits, Skill, Env_Type) [cite: User Summary].
+   - Output: คะแนนพยากรณ์ 4 ด้าน (Safety, Compatibility, Success, Innovation) [cite: User Summary].
+
+2. Learning from Feedback (POST /feedback)
+   - ระบบจะนำผลลัพธ์จริงที่ได้รับจาก Feedback ไป Retrain โมเดลแบบ Real-time เพื่อให้ AI ฉลาดขึ้นตามประสบการณ์จริง [cite: User Summary].
+
+## ⚡ Installation
+1. ติดตั้ง Library: pip install fastapi uvicorn scikit-learn lightgbm pandas numpy joblib [cite: User Summary]
+2. รันเซิร์ฟเวอร์: python main.py [cite: User Summary]

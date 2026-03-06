@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # 1. Nginx: ประตูหน้าบ้าน รวบทุกอย่างเข้าพอร์ต 80
+  nginx:
+    image: nginx:alpine
+    container_name: main_proxy
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - main_shared_network
+    depends_on:
+      - ai_server
+
+  2. Next.js: ตัวเว็บหลัก (Frontend + API Routes)
+  nextjs_web:
+    build: ./frontend
+    container_name: nextjs_app
+    restart: always
+    # [HOT RELOAD SECTION]
+    volumes:
+      - ./frontend:/app           # เชื่อมโค้ดจากเครื่องเราเข้าหาตู้
+      - /app/node_modules        # ป้องกันไม่ให้ node_modules ในเครื่องไปทับในตู้
+      - /app/.next               # ป้องกันการทับซ้อนของไฟล์ build
+    command: npm run dev         # รันโหมด Development เพื่อให้เกิด Hot Reload
+    env_file:
+      - ./frontend/.env.local
+
+    networks:
+      - main_shared_network
+
+  # 3. AI Server: สำหรับรัน Model LightGBM
+  ai_server:
+    build: ./pythonAIAPI  # ชี้ไปยังโฟลเดอร์ที่เก็บโค้ด AI
+    container_name: lightgbm_api
+    restart: always
+    volumes:
+      - ./pythonAIAPI:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - main_shared_network
+
+networks:
+  main_shared_network:
+    external: true  # จอยวงแลนกลางที่สร้างไว้

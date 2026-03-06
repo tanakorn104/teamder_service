@@ -1,0 +1,22 @@
+# 1. ใช้ Node.js เป็นฐาน
+FROM node:18-alpine
+
+# 2. ตั้งโฟลเดอร์ทำงาน
+WORKDIR /app
+
+# 3. ก๊อปปี้ไฟล์ package เพื่อลง dependencies ก่อน (ช่วยให้ build เร็วขึ้นครั้งถัดไป)
+COPY package*.json ./
+RUN npm install
+
+# 4. ก๊อปปี้โค้ดทั้งหมด
+COPY . .
+
+# 5. Build โปรเจกต์ (สำหรับ Production)
+# ถ้าเป็นช่วงพัฒนา (Dev) อาจจะข้ามขั้นตอนนี้แล้วใช้ npm run dev ใน CMD แทน
+RUN npm run build
+
+# 6. เปิดพอร์ต 3000 (พอร์ตมาตรฐาน Next.js)
+EXPOSE 3000
+
+# 7. สั่งรันเว็บ
+CMD ["npm", "run", "start"]
