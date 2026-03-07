@@ -1,0 +1,34 @@
+# === Security & API Keys ===
+# ห้ามเอาไฟล์ที่มีคีย์หรือรหัสผ่านขึ้น Git
+nginx/api_keys.map
+nginx/api_keys.conf
+.env
+*.pem
+*.key
+
+# === Docker ===
+# ไม่เก็บข้อมูลฐานข้อมูลที่รันในเครื่อง (ถ้าคุณ mount volume ไว้)
+mysql_data/
+.docker/
+
+# === Python (lightgbm_api) ===
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.ipynb_checkpoints/
+*.log
+
+# === Node/Next.js (ถ้ามี) ===
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
