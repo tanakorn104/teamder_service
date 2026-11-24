@@ -1,0 +1,4 @@
+# Copy to api_keys.map (which is git-ignored) and replace the key.
+# Format: "<api-key>" "<client-name>";
+# Generate a key with: openssl rand -hex 32
+"replace-with-a-long-random-key" "teamderModelKey";

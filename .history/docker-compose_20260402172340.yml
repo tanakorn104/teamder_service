@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: main_proxy
+    ports:
+      - "80:8080" # เปิดพอร์ต 80 ให้โลกภายนอกเข้า Next.js และ PMA
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - teamder_network
+    restart: always
+
+  # nextjs_app:
+  #   build: ./frontend
+  #   container_name: nextjs_app
+  #   environment:
+  #     - AI_API_URL=http://lightgbm_api:8000 # คุยกันเองข้างใน
+  #   networks:
+  #     - teamder_network
+  #   restart: always
+
+  lightgbm_api:
+    build: ./pythonAIAPI2.0
+    container_name: lightgbm_api
+    # --- ไม่เปิด ports ออกข้างนอก ---
+    volumes:
+      - ./pythonAIAPI2.0:/app
+    networks:
+      - teamder_network
+    restart: always
+
+networks:
+  teamder_network:
+    driver: bridge

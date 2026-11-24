@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  teamder-api:
+    build: .
+    container_name: teamder-ai
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app  # ผูกไฟล์ในเครื่องเข้ากับใน Docker (ช่วยให้ --reload ทำงาน)
+    environment:
+      - PYTHONUNBUFFERED=1 # ให้ Docker แสดง Log ใน Console ทันที

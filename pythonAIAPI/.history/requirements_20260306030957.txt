@@ -1,8 +1,0 @@
-fastapi
-uvicorn[standard] 
-joblib
-numpy
-pandas
-pydantic
-scikit-learn==1.6.1
-lightgbm

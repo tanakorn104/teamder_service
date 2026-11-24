@@ -1,0 +1,122 @@
+# Strategic Team AI Predictor & Learning System (Teamder AI Core)
+
+ระบบ AI สำหรับวิเคราะห์และทำนายประสิทธิภาพการทำงานของทีม โดยใช้การวิเคราะห์ระดับบุคคล (Individual Traits) ผสมผสานกับปัจจัยเชิงยุทธศาสตร์ (Strategic Factors) และบริบทของโปรเจกต์ เพื่อพยากรณ์ผลลัพธ์ของกลุ่มในบริบทที่แตกต่างกัน ทั้งในภาคการศึกษา ระดับมืออาชีพ หรือการแข่งขัน
+
+---
+
+## 📌 Overview
+โปรเจกต์นี้พัฒนาขึ้นเพื่อตอบโจทย์การจัดทีมที่มีประสิทธิภาพ (Strategic Team Formation) โดย AI จะคำนวณจากบุคลิกภาพ (Big Five Inventory), ทักษะการตัดสินใจ (Situational Judgment Test), ระดับความเชี่ยวชาญ (Skill) และบริบทแวดล้อม เพื่อพยากรณ์ผลลัพธ์ 4 ด้านหลัก และสรุปเป็นเปอร์เซ็นต์ความเข้ากันได้:
+1. **Y1_Safety:** ความปลอดภัยทางจิตใจภายในทีม (Psychological Safety)
+2. **Y2_Compatibility:** ความเข้ากันได้ของสมาชิกและเคมีในทีม
+3. **Y3_Success:** โอกาสความสำเร็จของงาน (ประเมินจากความรับผิดชอบและตัวแบก)
+4. **Y4_Innovation:** ศักยภาพในการสร้างสรรค์นวัตกรรม
+🏆 **Overall Match Percent:** ค่าเฉลี่ยแบบถ่วงน้ำหนัก (Weighted Average) เพื่อให้ผู้ใช้ดูผลลัพธ์ได้ง่ายที่สุดในหน้า UI
+
+## 🧠 Machine Learning Model
+* **Model Type:** `MultiOutputRegressor` โดยใช้เครื่องยนต์หลักเป็น `LightGBM` (LGBMRegressor) เพื่อรองรับการทำนายแบบหลายเป้าหมายพร้อมกัน
+* **Learning Strategy:** * **Team-Level Aggregation:** ยุบรวมข้อมูลรายบุคคลเป็น "ภาพรวมของทีม" (Mean & Max) เพื่อให้ AI มองเห็นไดนามิกของกลุ่ม
+    * **Strategic Features:** ใช้ `Max_Skill` เพื่อตรวจจับอิทธิพลของ "ตัวแบก" ในทีม
+    * **Semantic Context:** แปลง `Tags` ของโปรเจกต์เป็น เวกเตอร์ 8 มิติ (8-Dim Embedding) เพื่อให้ AI เข้าใจบริบทของงานโดยไม่ต้องฮาร์ดโค้ด
+    * **Continuous Online Learning:** ระบบมี Background Task สำหรับสะสม Feedback (Batch Retraining ทุกๆ 10 เคส) เพื่อให้โมเดลอัปเดตความฉลาดของตัวเองได้โดยไม่กระทบการทำงานของเซิร์ฟเวอร์
+* **Performance:** บรรลุค่าความแม่นยำ (R-squared) ในระดับ High (0.70 - 0.85+) ด้วยการทำงานของ Data Aggregation
+
+## 📊 Dataset Structure
+ฐานข้อมูลสำหรับการเทรน (`team_data_aggregated.csv`) ถูกออกแบบให้อยู่ในระดับทีม (1 แถว = 1 ทีม) โดยประกอบด้วย 20 Features หลัก:
+
+- **Category: Project Context** | Features: `Env_Type` (e.g., education, professional, competition), `Tag_Dim_1` ถึง `Tag_Dim_8`
+- **Category: Demographic** | Feature: `TeamSize` | Description: จำนวนสมาชิกในทีม (2-5 คน)
+- **Category: Personality** | Features: `BFI_O_Mean`, `C_Mean`, `E_Mean`, `A_Mean`, `N_Mean` | Description: ค่าเฉลี่ยบุคลิกภาพ Big Five
+- **Category: Leadership** | Features: `SJT_Lead_Mean`, `Plan_Mean`, `Support_Mean` | Description: ค่าเฉลี่ยทักษะการตัดสินใจและการทำงานร่วมกัน
+- **Category: Strategy** | Features: `Skill_Mean`, `Max_Skill` | Description: ค่าเฉลี่ยความเก่ง และระดับความเก่งของคนที่เก่งที่สุดในทีม
+
+## 🛠 Tech Stack
+* **Language:** Python 3.11+
+* **API Framework:** FastAPI, Uvicorn, Pydantic (พร้อมระบบ Lifespan & Background Tasks)
+* **ML Libraries:** Scikit-learn, LightGBM, Pandas, NumPy, Joblib
+* **Deployment:** Docker & Docker Compose
+
+## 🚀 API Endpoints
+
+### 1. Predict Team Performance (`POST /predict`)
+ใช้สำหรับส่งข้อมูลโปรเจกต์และสมาชิกเข้ามาให้ AI ประเมินความเข้ากันได้
+* **Input Example:**
+```json
+{
+  "project_cfg": {
+    "tags": ["machine learning", "startup", "pitching"],
+    "env_type": "competition"
+  },
+  "members": [
+    {
+      "O": 0.85, "C": 0.90, "E": 0.75, "A": 0.80, "N": 0.20,
+      "Lead": 0.85, "Plan": 0.90, "Support": 0.85,
+      "Skill": 0.95
+    },
+    {
+      "O": 0.70, "C": 0.85, "E": 0.60, "A": 0.90, "N": 0.30,
+      "Lead": 0.40, "Plan": 0.80, "Support": 0.95,
+      "Skill": 0.75
+    }
+  ]
+}
+Output Example:
+
+JSON
+{
+  "status": "success",
+  "overall_match_percent": 86.45,
+  "project_context": {
+    "tags_cleaned": ["machine learning", "startup", "pitching"],
+    "env_type_cleaned": "competition"
+  },
+  "predictions_detail": {
+    "Y1_Safety": 78.50,
+    "Y2_Compatibility": 82.20,
+    "Y3_Success": 92.15,
+    "Y4_Innovation": 75.30
+  }
+}
+2. Learning from Feedback (POST /feedback)
+นำผลลัพธ์การทำงานจริงของทีมกลับมาป้อนให้ AI เพื่อ Retrain โมเดลแบบอัตโนมัติเบื้องหลัง
+
+Input Example:
+
+JSON
+{
+  "project_cfg": {
+    "tags": ["machine learning", "startup", "pitching"],
+    "env_type": "competition"
+  },
+  "members": [
+    {
+      "O": 0.85, "C": 0.90, "E": 0.75, "A": 0.80, "N": 0.20,
+      "Lead": 0.85, "Plan": 0.90, "Support": 0.85,
+      "Skill": 0.95
+    },
+    {
+      "O": 0.70, "C": 0.85, "E": 0.60, "A": 0.90, "N": 0.30,
+      "Lead": 0.40, "Plan": 0.80, "Support": 0.95,
+      "Skill": 0.75
+    }
+  ],
+  "actual_scores": [0.80, 0.85, 0.95, 0.80]
+}
+⚡ Installation & Deployment
+วิธีที่ 1: รันผ่าน Docker (แนะนำสำหรับการใช้งานจริง)
+ติดตั้ง Docker Desktop
+
+รันคำสั่งใน Terminal:
+
+Bash
+docker-compose up --build
+ระบบจะเปิดใช้งานที่ http://localhost:8000 (แก้ไขพอร์ตได้ใน docker-compose.yml)
+
+วิธีที่ 2: รันแบบ Local Python
+ติดตั้ง Dependencies:
+
+Bash
+pip install -r requirements.txt
+เริ่มการทำงานของเซิร์ฟเวอร์:
+
+Bash
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload

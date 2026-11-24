@@ -5,7 +5,8 @@ nginx/api_keys.conf
 .env
 *.pem
 *.key
-
+*.map
+.map
 # === Docker ===
 # ไม่เก็บข้อมูลฐานข้อมูลที่รันในเครื่อง (ถ้าคุณ mount volume ไว้)
 mysql_data/
